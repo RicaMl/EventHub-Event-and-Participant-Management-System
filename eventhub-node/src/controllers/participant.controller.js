@@ -9,6 +9,7 @@ const getAllParticipants = async (req, res, next) => {
       `
       SELECT
         user_id,
+        user_id AS id,
         username,
         first_name,
         last_name,
@@ -37,6 +38,7 @@ const getParticipantById = async (req, res, next) => {
       `
       SELECT
         user_id,
+        user_id AS id,
         username,
         first_name,
         last_name,
@@ -125,6 +127,7 @@ const createParticipant = async (req, res, next) => {
       VALUES ($1, $2, $3, $4, $5, $6, 'active', $7)
       RETURNING
         user_id,
+        user_id AS id,
         username,
         first_name,
         last_name,
@@ -234,6 +237,7 @@ const updateParticipant = async (req, res, next) => {
       WHERE user_id = $9
       RETURNING
         user_id,
+        user_id AS id,
         username,
         first_name,
         last_name,
@@ -316,6 +320,7 @@ const deleteParticipant = async (req, res, next) => {
       WHERE user_id = $1
       RETURNING
         user_id,
+        user_id AS id,
         username,
         first_name,
         last_name,
