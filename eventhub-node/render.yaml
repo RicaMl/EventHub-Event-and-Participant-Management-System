@@ -5,8 +5,8 @@ services:
     region: frankfurt
     plan: free
     rootDir: eventhub-node
-    buildCommand: "cd eventhub-node && npm install"
-    startCommand: "cd eventhub-node && npm start"
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
