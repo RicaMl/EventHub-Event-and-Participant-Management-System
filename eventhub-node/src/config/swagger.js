@@ -62,6 +62,7 @@ const options = {
           type: 'object',
           properties: {
             user_id: { type: 'integer', example: 12 },
+            username: { type: 'string', example: 'john_doe' },
             first_name: { type: 'string', example: 'John' },
             last_name: { type: 'string', example: 'Doe' },
             email: { type: 'string', example: 'john@example.com' },
@@ -74,8 +75,9 @@ const options = {
         },
         ParticipantInput: {
           type: 'object',
-          required: ['first_name', 'last_name', 'email', 'password'],
+          required: ['username', 'first_name', 'last_name', 'email', 'password'],
           properties: {
+            username: { type: 'string', example: 'john_doe' },
             first_name: { type: 'string', example: 'John' },
             last_name: { type: 'string', example: 'Doe' },
             email: { type: 'string', example: 'john@example.com' },

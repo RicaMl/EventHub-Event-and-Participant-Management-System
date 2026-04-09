@@ -23,7 +23,7 @@ const login = async (req, res, next) => {
       `
       SELECT *
       FROM eventhub.users
-      WHERE email = $1;
+      WHERE email = $1 OR username = $1;
       `,
       [identifier.trim().toLowerCase()]
     );
@@ -65,10 +65,12 @@ const login = async (req, res, next) => {
     res.status(200).json({
       token,
       user_id: user.user_id,
+      username: user.username,
       email: user.email,
       first_name: user.first_name,
       last_name: user.last_name,
       role: user.role,
+      is_staff: user.role === 'admin',
       status: user.status,
       phone: user.phone,
       created_at: user.created_at,

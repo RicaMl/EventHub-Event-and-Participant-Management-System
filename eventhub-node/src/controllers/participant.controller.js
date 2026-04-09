@@ -9,6 +9,7 @@ const getAllParticipants = async (req, res, next) => {
       `
       SELECT
         user_id,
+        username,
         first_name,
         last_name,
         email,
@@ -36,6 +37,7 @@ const getParticipantById = async (req, res, next) => {
       `
       SELECT
         user_id,
+        username,
         first_name,
         last_name,
         email,
@@ -63,6 +65,7 @@ const getParticipantById = async (req, res, next) => {
 const createParticipant = async (req, res, next) => {
   try {
     const {
+      username,
       first_name,
       last_name,
       email,
@@ -71,9 +74,9 @@ const createParticipant = async (req, res, next) => {
       role
     } = req.body;
 
-    if (!first_name || !last_name || !email || !password) {
+    if (!username || !first_name || !last_name || !email || !password) {
       return res.status(400).json({
-        non_field_errors: ['first_name, last_name, email, password are required']
+        non_field_errors: ['username, first_name, last_name, email, password are required']
       });
     }
 
@@ -85,14 +88,23 @@ const createParticipant = async (req, res, next) => {
       });
     }
 
-    const existingUser = await pool.query(
+    const existingEmail = await pool.query(
       `SELECT user_id FROM eventhub.users WHERE email = $1`,
       [email]
     );
-
-    if (existingUser.rows.length > 0) {
+    if (existingEmail.rows.length > 0) {
       return res.status(409).json({
         email: ['Email already exists']
+      });
+    }
+
+    const existingUsername = await pool.query(
+      `SELECT user_id FROM eventhub.users WHERE username = $1`,
+      [username]
+    );
+    if (existingUsername.rows.length > 0) {
+      return res.status(409).json({
+        username: ['Username already exists']
       });
     }
 
@@ -101,6 +113,7 @@ const createParticipant = async (req, res, next) => {
     const result = await pool.query(
       `
       INSERT INTO eventhub.users (
+        username,
         first_name,
         last_name,
         email,
@@ -109,9 +122,10 @@ const createParticipant = async (req, res, next) => {
         status,
         phone
       )
-      VALUES ($1, $2, $3, $4, $5, 'active', $6)
+      VALUES ($1, $2, $3, $4, $5, $6, 'active', $7)
       RETURNING
         user_id,
+        username,
         first_name,
         last_name,
         email,
@@ -122,6 +136,7 @@ const createParticipant = async (req, res, next) => {
         updated_at;
       `,
       [
+        username.trim(),
         first_name.trim(),
         last_name.trim(),
         email.trim().toLowerCase(),
@@ -134,6 +149,9 @@ const createParticipant = async (req, res, next) => {
     res.status(201).json(result.rows[0]);
   } catch (error) {
     if (error.code === '23505') {
+      if (error.constraint && error.constraint.includes('username')) {
+        return res.status(409).json({ username: ['Username already exists'] });
+      }
       return res.status(409).json({ email: ['Email already exists'] });
     }
     next(error);
@@ -144,6 +162,7 @@ const updateParticipant = async (req, res, next) => {
   try {
     const { user_id } = req.params;
     const {
+      username,
       first_name,
       last_name,
       email,
@@ -164,6 +183,7 @@ const updateParticipant = async (req, res, next) => {
 
     const current = existing.rows[0];
 
+    const nextUsername = username ?? current.username;
     const nextFirstName = first_name ?? current.first_name;
     const nextLastName = last_name ?? current.last_name;
     const nextEmail = email ? email.trim().toLowerCase() : current.email;
@@ -180,16 +200,19 @@ const updateParticipant = async (req, res, next) => {
     }
 
     const duplicatedEmail = await pool.query(
-      `
-      SELECT user_id
-      FROM eventhub.users
-      WHERE email = $1 AND user_id <> $2
-      `,
+      `SELECT user_id FROM eventhub.users WHERE email = $1 AND user_id <> $2`,
       [nextEmail, user_id]
     );
-
     if (duplicatedEmail.rows.length > 0) {
       return res.status(409).json({ message: 'Email already exists' });
+    }
+
+    const duplicatedUsername = await pool.query(
+      `SELECT user_id FROM eventhub.users WHERE username = $1 AND user_id <> $2`,
+      [nextUsername, user_id]
+    );
+    if (duplicatedUsername.rows.length > 0) {
+      return res.status(409).json({ message: 'Username already exists' });
     }
 
     let nextPasswordHash = current.password_hash;
@@ -200,16 +223,18 @@ const updateParticipant = async (req, res, next) => {
     const result = await pool.query(
       `
       UPDATE eventhub.users
-      SET first_name = $1,
-          last_name = $2,
-          email = $3,
-          password_hash = $4,
-          role = $5,
-          status = $6,
-          phone = $7
-      WHERE user_id = $8
+      SET username = $1,
+          first_name = $2,
+          last_name = $3,
+          email = $4,
+          password_hash = $5,
+          role = $6,
+          status = $7,
+          phone = $8
+      WHERE user_id = $9
       RETURNING
         user_id,
+        username,
         first_name,
         last_name,
         email,
@@ -220,6 +245,7 @@ const updateParticipant = async (req, res, next) => {
         updated_at;
       `,
       [
+        nextUsername,
         nextFirstName,
         nextLastName,
         nextEmail,
@@ -234,7 +260,7 @@ const updateParticipant = async (req, res, next) => {
     res.status(200).json(result.rows[0]);
   } catch (error) {
     if (error.code === '23505') {
-      return res.status(409).json({ message: 'Email already exists' });
+      return res.status(409).json({ message: 'Email or username already exists' });
     }
     next(error);
   }
@@ -290,6 +316,7 @@ const deleteParticipant = async (req, res, next) => {
       WHERE user_id = $1
       RETURNING
         user_id,
+        username,
         first_name,
         last_name,
         email,
