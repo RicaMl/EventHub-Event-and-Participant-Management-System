@@ -12,7 +12,13 @@ const errorHandler = require('./middlewares/error.middleware');
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = [
+  'https://eventhub-frontend-v2-smoky.vercel.app'
+];
+
+app.use(cors({
+  origin: allowedOrigins
+}));
 app.use(morgan('dev'));
 app.use(express.json());
 
