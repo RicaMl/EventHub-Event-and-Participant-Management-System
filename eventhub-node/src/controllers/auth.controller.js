@@ -5,7 +5,6 @@ const { JWT_SECRET } = require('../middlewares/auth.middleware');
 
 // POST /api/auth/login/
 // Django's obtain_auth_token returns { token } by default.
-// The friend customized it to return token + user info FLAT (no nested 'user' key).
 const login = async (req, res, next) => {
   try {
     const { email, password, username } = req.body;
@@ -16,7 +15,7 @@ const login = async (req, res, next) => {
 
     if (!identifier || !password) {
       return res.status(400).json({
-        message: 'email (or username) and password are required'
+        non_field_errors: ['email (or username) and password are required']
       });
     }
 
@@ -31,7 +30,7 @@ const login = async (req, res, next) => {
 
     if (result.rows.length === 0) {
       return res.status(400).json({
-        message: 'Unable to log in with provided credentials.'
+        non_field_errors: ['Unable to log in with provided credentials.']
       });
     }
 
@@ -39,7 +38,7 @@ const login = async (req, res, next) => {
 
     if (user.status !== 'active') {
       return res.status(400).json({
-        message: 'This account has been deactivated.'
+        non_field_errors: ['This account has been deactivated.']
       });
     }
 
@@ -47,7 +46,7 @@ const login = async (req, res, next) => {
 
     if (!passwordMatch) {
       return res.status(400).json({
-        message: 'Unable to log in with provided credentials.'
+        non_field_errors: ['Unable to log in with provided credentials.']
       });
     }
 

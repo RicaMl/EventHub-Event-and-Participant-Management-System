@@ -73,7 +73,7 @@ const createParticipant = async (req, res, next) => {
 
     if (!first_name || !last_name || !email || !password) {
       return res.status(400).json({
-        message: 'first_name, last_name, email, password are required'
+        non_field_errors: ['first_name, last_name, email, password are required']
       });
     }
 
@@ -81,7 +81,7 @@ const createParticipant = async (req, res, next) => {
 
     if (!allowedRoles.includes(normalizedRole)) {
       return res.status(400).json({
-        message: 'Invalid role'
+        role: ['Invalid role']
       });
     }
 
@@ -92,7 +92,7 @@ const createParticipant = async (req, res, next) => {
 
     if (existingUser.rows.length > 0) {
       return res.status(409).json({
-        message: 'Email already exists'
+        email: ['Email already exists']
       });
     }
 
@@ -134,7 +134,7 @@ const createParticipant = async (req, res, next) => {
     res.status(201).json(result.rows[0]);
   } catch (error) {
     if (error.code === '23505') {
-      return res.status(409).json({ message: 'Email already exists' });
+      return res.status(409).json({ email: ['Email already exists'] });
     }
     next(error);
   }
