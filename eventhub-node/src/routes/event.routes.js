@@ -5,7 +5,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/v1/events:
+ * /api/events:
  *   get:
  *     summary: Get all events
  *     tags: [Events]
@@ -51,7 +51,7 @@ router.post('/', eventController.createEvent);
 
 /**
  * @swagger
- * /api/v1/events/{id}:
+ * /api/events/{id}:
  *   get:
  *     summary: Get event by id
  *     tags: [Events]

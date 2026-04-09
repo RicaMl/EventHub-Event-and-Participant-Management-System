@@ -5,7 +5,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/v1/health:
+ * /api/health:
  *   get:
  *     summary: Basic health check
  *     tags: [Health]
@@ -29,7 +29,7 @@ router.get('/', (req, res) => {
 
 /**
  * @swagger
- * /api/v1/health/db:
+ * /api/health/db:
  *   get:
  *     summary: Database connection test
  *     tags: [Health]

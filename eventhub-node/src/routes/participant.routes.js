@@ -5,7 +5,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/v1/participants:
+ * /api/participants:
  *   get:
  *     summary: Get all participants
  *     tags: [Participants]
@@ -40,7 +40,7 @@ router.post('/', participantController.createParticipant);
 
 /**
  * @swagger
- * /api/v1/participants/{user_id}/events:
+ * /api/participants/{user_id}/events:
  *   get:
  *     summary: Get events of a participant
  *     tags: [Participants]
@@ -61,7 +61,7 @@ router.get('/:user_id/events', participantController.getParticipantEvents);
 
 /**
  * @swagger
- * /api/v1/participants/{user_id}:
+ * /api/participants/{user_id}:
  *   get:
  *     summary: Get participant by user_id
  *     tags: [Participants]

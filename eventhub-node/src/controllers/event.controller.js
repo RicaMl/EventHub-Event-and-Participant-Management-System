@@ -7,9 +7,14 @@ const buildEventFilters = (query) => {
   const values = [];
   let index = 1;
 
-  if (query.date) {
-    conditions.push(`e.date = $${index++}`);
-    values.push(query.date);
+  if (query.start_date) {
+    conditions.push(`e.start_date = $${index++}`);
+    values.push(query.start_date);
+  }
+
+  if (query.price !== undefined) {
+    conditions.push(`e.price = $${index++}`);
+    values.push(query.price);
   }
 
   if (query.status) {
@@ -25,9 +30,12 @@ const buildEventFilters = (query) => {
 
   const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
-  let orderClause = 'ORDER BY e.date ASC, e.id ASC';
-  if (query.ordering === 'date') orderClause = 'ORDER BY e.date ASC';
-  if (query.ordering === '-date') orderClause = 'ORDER BY e.date DESC';
+  let orderClause = 'ORDER BY e.created_at DESC';
+  if (query.ordering === 'price') orderClause = 'ORDER BY e.price ASC';
+  if (query.ordering === '-price') orderClause = 'ORDER BY e.price DESC';
+  if (query.ordering === 'start_date') orderClause = 'ORDER BY e.start_date ASC';
+  if (query.ordering === '-start_date') orderClause = 'ORDER BY e.start_date DESC';
+  if (query.ordering === 'created_at') orderClause = 'ORDER BY e.created_at ASC';
 
   return { whereClause, values, orderClause };
 };
@@ -41,7 +49,9 @@ const getAllEvents = async (req, res, next) => {
         e.id,
         e.title,
         e.description,
-        e.date,
+        e.price,
+        e.start_date,
+        e.end_date,
         e.status,
         e.location,
         e.max_participants,
@@ -73,7 +83,9 @@ const getEventById = async (req, res, next) => {
         e.id,
         e.title,
         e.description,
-        e.date,
+        e.price,
+        e.start_date,
+        e.end_date,
         e.status,
         e.location,
         e.max_participants,
@@ -119,11 +131,17 @@ const getEventById = async (req, res, next) => {
 
 const createEvent = async (req, res, next) => {
   try {
-    const { title, description, date, status, location, max_participants } = req.body;
+    const { title, description, price, start_date, end_date, status, location, max_participants } = req.body;
 
-    if (!title || !date || !status || max_participants === undefined) {
+    if (!title || !start_date || !end_date || !status || max_participants === undefined) {
       return res.status(400).json({
-        message: 'title, date, status, max_participants are required'
+        message: 'title, start_date, end_date, status, max_participants are required'
+      });
+    }
+
+    if (new Date(end_date) <= new Date(start_date)) {
+      return res.status(400).json({
+        message: 'end_date must be after start_date'
       });
     }
 
@@ -135,11 +153,11 @@ const createEvent = async (req, res, next) => {
 
     const result = await pool.query(
       `
-      INSERT INTO eventhub.events (title, description, date, status, location, max_participants)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO eventhub.events (title, description, price, start_date, end_date, status, location, max_participants)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *;
       `,
-      [title, description || null, date, status, location || null, max_participants]
+      [title, description || null, price || 0, start_date, end_date, status, location || null, max_participants]
     );
 
     res.status(201).json(result.rows[0]);
@@ -151,7 +169,7 @@ const createEvent = async (req, res, next) => {
 const updateEvent = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { title, description, date, status, location, max_participants } = req.body;
+    const { title, description, price, start_date, end_date, status, location, max_participants } = req.body;
 
     const existing = await pool.query(
       `SELECT * FROM eventhub.events WHERE id = $1`,
@@ -166,10 +184,18 @@ const updateEvent = async (req, res, next) => {
 
     const nextTitle = title ?? current.title;
     const nextDescription = description ?? current.description;
-    const nextDate = date ?? current.date;
+    const nextPrice = price ?? current.price;
+    const nextStartDate = start_date ?? current.start_date;
+    const nextEndDate = end_date ?? current.end_date;
     const nextStatus = status ?? current.status;
     const nextLocation = location ?? current.location;
     const nextMaxParticipants = max_participants ?? current.max_participants;
+
+    if (new Date(nextEndDate) <= new Date(nextStartDate)) {
+      return res.status(400).json({
+        message: 'end_date must be after start_date'
+      });
+    }
 
     if (!allowedStatuses.includes(nextStatus)) {
       return res.status(400).json({ message: 'Invalid event status' });
@@ -180,17 +206,21 @@ const updateEvent = async (req, res, next) => {
       UPDATE eventhub.events
       SET title = $1,
           description = $2,
-          date = $3,
-          status = $4,
-          location = $5,
-          max_participants = $6
-      WHERE id = $7
+          price = $3,
+          start_date = $4,
+          end_date = $5,
+          status = $6,
+          location = $7,
+          max_participants = $8
+      WHERE id = $9
       RETURNING *;
       `,
       [
         nextTitle,
         nextDescription,
-        nextDate,
+        nextPrice,
+        nextStartDate,
+        nextEndDate,
         nextStatus,
         nextLocation,
         nextMaxParticipants,

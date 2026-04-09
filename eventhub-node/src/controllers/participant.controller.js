@@ -18,7 +18,7 @@ const getAllParticipants = async (req, res, next) => {
         created_at,
         updated_at
       FROM eventhub.users
-      ORDER BY user_id ASC;
+      ORDER BY created_at DESC;
       `
     );
 
@@ -335,7 +335,9 @@ const getParticipantEvents = async (req, res, next) => {
         e.id,
         e.title,
         e.description,
-        e.date,
+        e.price,
+        e.start_date,
+        e.end_date,
         e.status,
         e.location,
         e.max_participants,
@@ -345,7 +347,7 @@ const getParticipantEvents = async (req, res, next) => {
       FROM eventhub.registrations r
       JOIN eventhub.events e ON e.id = r.event_id
       WHERE r.user_id = $1
-      ORDER BY e.date ASC, e.id ASC;
+      ORDER BY e.created_at DESC;
       `,
       [user_id]
     );

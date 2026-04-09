@@ -22,7 +22,9 @@ const options = {
             id: { type: 'integer', example: 1 },
             title: { type: 'string', example: 'AI Conference 2026' },
             description: { type: 'string', example: 'Conference about applied AI systems.' },
-            date: { type: 'string', format: 'date', example: '2026-06-10' },
+            price: { type: 'number', format: 'decimal', example: 0.00 },
+            start_date: { type: 'string', format: 'date-time', example: '2026-06-10T09:00:00Z' },
+            end_date: { type: 'string', format: 'date-time', example: '2026-06-10T18:00:00Z' },
             status: {
               type: 'string',
               enum: ['upcoming', 'ongoing', 'completed', 'cancelled'],
@@ -36,11 +38,13 @@ const options = {
         },
         EventInput: {
           type: 'object',
-          required: ['title', 'date', 'status', 'max_participants'],
+          required: ['title', 'start_date', 'end_date', 'status', 'max_participants'],
           properties: {
             title: { type: 'string', example: 'AI Conference 2026' },
             description: { type: 'string', example: 'Conference about applied AI systems.' },
-            date: { type: 'string', format: 'date', example: '2026-06-10' },
+            price: { type: 'number', format: 'decimal', example: 0.00 },
+            start_date: { type: 'string', format: 'date-time', example: '2026-06-10T09:00:00Z' },
+            end_date: { type: 'string', format: 'date-time', example: '2026-06-10T18:00:00Z' },
             status: {
               type: 'string',
               enum: ['upcoming', 'ongoing', 'completed', 'cancelled'],

@@ -110,9 +110,29 @@ function validateEventPayload(payload, { partial = false } = {}) {
     }
   }
 
-  if (!partial || payload.date !== undefined) {
-    if (!payload.date || Number.isNaN(Date.parse(payload.date))) {
-      errors.push('date must be a valid date.');
+  if (payload.price !== undefined && payload.price !== null) {
+    const numPrice = Number(payload.price);
+    if (Number.isNaN(numPrice) || numPrice < 0) {
+      errors.push('price must be a non-negative number.');
+    }
+  }
+
+  if (!partial || payload.start_date !== undefined) {
+    if (!payload.start_date || Number.isNaN(Date.parse(payload.start_date))) {
+      errors.push('start_date must be a valid date.');
+    }
+  }
+
+  if (!partial || payload.end_date !== undefined) {
+    if (!payload.end_date || Number.isNaN(Date.parse(payload.end_date))) {
+      errors.push('end_date must be a valid date.');
+    }
+  }
+
+  // Cross-field validation: end_date must be after start_date
+  if (payload.start_date && payload.end_date) {
+    if (new Date(payload.end_date) <= new Date(payload.start_date)) {
+      errors.push('end_date must be after start_date.');
     }
   }
 
