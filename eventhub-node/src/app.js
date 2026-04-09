@@ -13,7 +13,8 @@ const errorHandler = require('./middlewares/error.middleware');
 const app = express();
 
 const allowedOrigins = [
-  'https://eventhub-frontend-v2-smoky.vercel.app'
+  'https://eventhub-frontend-v2-smoky.vercel.app',
+  'http://localhost:5173'
 ];
 
 app.use(cors({
