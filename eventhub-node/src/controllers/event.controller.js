@@ -244,12 +244,12 @@ const deleteEvent = async (req, res, next) => {
     );
 
     if (existing.rows.length === 0) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ detail: 'Event not found' });
     }
 
     if (existing.rows[0].status !== 'upcoming') {
       return res.status(400).json({
-        message: 'Only upcoming events can be deleted'
+        detail: 'Only upcoming events can be deleted'
       });
     }
 
